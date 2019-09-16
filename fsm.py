@@ -34,11 +34,15 @@ def idle_state(robot : cozmo.robot.Robot):
         # robot.say_text(str(label)).wait_for_completed()
         
         if label == 'drone':
-            robot.say_text('Drone State').wait_for_completed()
+            print('drone')
+            # robot.say_text('Drone State').wait_for_completed()
         elif label == 'inspection':
-            robot.say_text('Inspection State').wait_for_completed()
+            print('inspection')
+            # robot.say_text('Inspection State').wait_for_completed()
         elif label == 'order':
-            robot.say_text('Order State').wait_for_completed()
+            print('order')
+            robot.drive_wheels(50.0, 120.0, duration=8.0)
+            # robot.say_text('Order State').wait_for_completed()
         # elif label == 'plane':
         #     robot.say_text('Plane State').wait_for_completed()
         # elif label == 'truck':
