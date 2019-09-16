@@ -39,14 +39,14 @@ def idle_state(robot : cozmo.robot.Robot):
             robot.say_text('Inspection State').wait_for_completed()
         elif label == 'order':
             robot.say_text('Order State').wait_for_completed()
-        elif label == 'plane':
-            robot.say_text('Plane State').wait_for_completed()
-        elif label == 'truck':
-            robot.say_text('Truck State').wait_for_completed()
-        elif label == 'hands':
-            robot.say_text('Hands State').wait_for_completed()
-        elif label == 'place':
-            robot.say_text('Place State').wait_for_completed()
+        # elif label == 'plane':
+        #     robot.say_text('Plane State').wait_for_completed()
+        # elif label == 'truck':
+        #     robot.say_text('Truck State').wait_for_completed()
+        # elif label == 'hands':
+        #     robot.say_text('Hands State').wait_for_completed()
+        # elif label == 'place':
+        #     robot.say_text('Place State').wait_for_completed()
         elif label == 'none':
             continue
             
