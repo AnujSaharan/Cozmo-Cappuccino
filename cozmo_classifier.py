@@ -1,8 +1,9 @@
-#!/usr/bin/env python
+# Cozmo Classifier is a script to extract image features and then 
+# classify images using the pre-trained image_classifier model.
 
-##############
-#### Anuj Saharan
-##############
+# CS 3630 - Fall 2019
+# Georgia Institute of Technology
+# Authors: Anuj Saharan, Riya Agrawal
 
 import numpy as np
 import re
@@ -14,72 +15,15 @@ class ImageClassifier:
     
     def __init__(self):
         self.classifier = None
-
-    def imread_convert(self, f):
-        # print(type(f))
-        # print(f)
-        return io.imread(f).astype(np.uint8)
-        
-    def load_data_from_folder(self, dir):
-        # read all images into an image collection
-        ic = io.ImageCollection(dir+"*.bmp", load_func=self.imread_convert)
-        
-        #create one large array of image data
-        data = io.concatenate_images(ic)
-        # print(type(data))
-        #extract labels from image names
-        labels = np.array(ic.files)
-        for i, f in enumerate(labels):
-            m = re.search("_", f)
-            labels[i] = f[len(dir):m.start()]
-        
-        return(data,labels)
-        
+    
     def extract_image_features(self, data):
-        # Please do not modify the header above
-
-        # extract feature vector from image data
-
         feature_data = []
         for pixel in data:
-            feature_data.append(feature.hog(pixel, orientations=9, pixels_per_cell=(32, 32), cells_per_block=(4, 3)))
-        
-        # Please do not modify the return type below
+            feature_data.append(feature.hog(pixel, orientations=9, pixels_per_cell=(32, 32), cells_per_block=(4, 3)))        
         return(feature_data)
-
-    def train_classifier(self, train_data, train_labels):
-        # Please do not modify the header above
-        
-        # train model and save the trained model to self.classifier
-        self.classifier = svm.SVC(gamma='scale').fit(train_data, train_labels)
-    
-    def predict_labels(self, data):
-        # Please do not modify the header
-
-        # predict labels of test data using trained model in self.classifier
-        # the code below expects output to be stored in predicted_labels    
-        predicted_labels = self.classifier.predict(data)
-        
-        # Please do not modify the return type below
-        return predicted_labels
-
-      
+  
 def main():
-
     img_clf = ImageClassifier()
-    
-    # load images
-    (train_raw, train_labels) = img_clf.load_data_from_folder('./train/')
-    (test_raw, test_labels) = img_clf.load_data_from_folder('./test/')
-    print(test_raw.shape)
-    # convert images into features
-    train_data = img_clf.extract_image_features(train_raw)
-    test_data = img_clf.extract_image_features(test_raw)
-    
-    # train model and test on training data
-    img_clf.train_classifier(train_data, train_labels)
-    predicted_labels = img_clf.predict_labels(train_data)
-
 
 if __name__ == "__main__":
     main()
