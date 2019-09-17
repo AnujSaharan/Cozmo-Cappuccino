@@ -53,10 +53,24 @@ def idle_state(robot : cozmo.robot.Robot = None):
             print('inspection')
             robot.say_text('Inspection State').wait_for_completed()
             for x in range(4):
-                action1 = robot.turn_in_place(degrees(90)).wait_for_completed()
-                action2 = robot.drive_straight(distance_mm(200.0), speed_mmps(100.0)).wait_for_completed()
-                # action3 = robot.set_lift_height(1.0, duration=3.0, in_parallel=True).wait_for_completed()
-                # action3 = robot.set_lift_height(0.0, duration=3.0).wait_for_completed()
+                robot.turn_in_place(degrees(90)).wait_for_completed()
+                
+                action1 = robot.drive_straight(distance_mm(200), speed_mmps(40), in_parallel=True)
+                
+                action2 = robot.set_lift_height(1.0, in_parallel=True, duration=3.0)
+                action2.wait_for_completed()
+                
+                action2 = robot.set_lift_height(0.0, in_parallel=True, duration=3.0)
+                action2.wait_for_completed()
+
+                action1.wait_for_completed()
+                # action1 = robot.turn_in_place(degrees(90), in_parallel=True).wait_for_completed()
+                
+                # robot.drive_straight(distance_mm(200.0), speed_mmps(100.0), in_parallel=True)
+                
+                # robot.set_lift_height(1.0, duration=3.0)
+                
+                # robot.set_lift_height(0.0,             duration=3.0).wait_for_completed()
             # robot.drive_straight(distance_mm(200.0), speed_mmps(100.0), in_parallel=True)
             # robot.set_lift_height(1.0, in_parallel=True, duration=3.0).wait_for_completed()
             robot.set_head_angle(cozmo.util.degrees(0)).wait_for_completed()
