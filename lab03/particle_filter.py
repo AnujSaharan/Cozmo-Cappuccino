@@ -85,10 +85,13 @@ def measurement_update(particles, measured_marker_list, grid):
     if (len(particles) > len(measured_marker_list)):
             #the number of dropped markers = number of markers seen by the particle - number of markers seen by the robot
             dropped_markers =  len(particles) - len(measured_marker_list)
+            #scale your original weight estimate by (Dropped Rate) ^ (the number of dropped markers)
             scale = dropped_markers * setting.DETECTION_FAILURE_RATE
             weight_of_particles = [weight * scale for weight in weight_of_particles]
     else:
+            #the number of spurious markers = number of markers seen by the robot - number of markers seen by the particle
             spurious_markers =  len(measured_marker_list) - len(particles)
+            #scale your original weight estimate by (Spurious Rate) ^ (the number of spurious markers)
             scale = spurious_markers * setting.SPURIOUS_DETECTION_RATE
             weight_of_particles = [weight * scale for weight in weight_of_particles]
             
@@ -101,7 +104,7 @@ def measurement_update(particles, measured_marker_list, grid):
             probability_of_particles = [weight / normalizing_factor for weight in weight_of_particles]
 
     
-    #account for addition of random samples 
+    #account for addition of random samples before resampling
     random_sample_size = int(len(particles) / 8)
     
     #resample
@@ -115,7 +118,7 @@ def measurement_update(particles, measured_marker_list, grid):
 
     return measured_particles
 
-# not given method
+
 def calculate_probability(particle, measured_marker_list, grid):
     probability = 0.0 
     return probability
