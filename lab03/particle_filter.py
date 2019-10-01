@@ -39,8 +39,8 @@ def motion_update(particles, odom):
             dx, dy = rotate_point(x_new, y_new, h)
             
             # New Particle
-            updated_particle = Particle(x + dx, y + dy, h + h_new)
-            motion_particles.append(updated_particle)
+            particle_after_updating = Particle(x + dx, y + dy, h + h_new)
+            motion_particles.append(particle_after_updating)
     return motion_particles
 
 # ------------------------------------------------------------------------
