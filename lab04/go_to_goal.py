@@ -153,7 +153,7 @@ async def run(robot: cozmo.robot.Robot):
 
     at_goal = False
     localized = False
-    degree_increment = 30
+    degree_increment = 20
     forwardbackward = 1
     while True:
         await robot.set_lift_height(0).wait_for_completed()
@@ -193,14 +193,14 @@ async def run(robot: cozmo.robot.Robot):
             if not localized:
                 await robot.turn_in_place(cozmo.util.degrees(degree_increment)).wait_for_completed()
                 
-                if forwardbackward:
-                    await robot.drive_straight(distance_mm(100.0), speed_mmps(500.0)).wait_for_completed()
-                    forwardbackward = forwardbackward * -1
-                    print(forwardbackward)
-                else:
-                    await robot.drive_straight(distance_mm(-80.0), speed_mmps(500.0)).wait_for_completed()
-                    forwardbackward = forwardbackward * -1
-                    print(forwardbackward)
+                # if forwardbackward:
+                #     await robot.drive_straight(distance_mm(100.0), speed_mmps(500.0)).wait_for_completed()
+                #     forwardbackward = forwardbackward * -1
+                #     print(forwardbackward)
+                # else:
+                #     await robot.drive_straight(distance_mm(-80.0), speed_mmps(500.0)).wait_for_completed()
+                #     forwardbackward = forwardbackward * -1
+                #     print(forwardbackward)
 
     ###################
 
