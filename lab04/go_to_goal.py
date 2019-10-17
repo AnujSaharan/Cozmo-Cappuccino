@@ -16,7 +16,11 @@ import time
 import sys
 import asyncio
 from PIL import Image
+<<<<<<< HEAD
 from cozmo.util import distance_mm, speed_mmps, degrees
+=======
+
+>>>>>>> cac2f6b70fe2a01d22d2d072cbe666c73ebd93ea
 from markers import detect, annotator
 
 from grid import CozGrid
@@ -150,6 +154,7 @@ async def run(robot: cozmo.robot.Robot):
     ], dtype=np.float)
 
     ###################
+<<<<<<< HEAD
 
     at_goal = False
     localized = False
@@ -206,6 +211,73 @@ async def run(robot: cozmo.robot.Robot):
 
 async def pickedUp(robot: cozmo.robot.Robot):
     await robot.play_anim_trigger(cozmo.anim.Triggers.FrustratedByFailure).wait_for_completed()
+=======
+    reachedGoal = False
+    hasConverged = False
+    convergenceCheck = 0
+        
+    while (True):
+
+        #if robot arrived, don't move until not picked up
+        if reachedGoal: 
+            #animation
+            await robot.play_anim_trigger(cozmo.anim.Triggers.CodeLabExcited, in_parallel=True).wait_for_completed()
+            while not robot.is_picked_up: 
+                await robot.drive_straight(distance_mm(0), speed_mmps(0)).wait_for_completed() 
+
+        # if robot is kidnapped
+        if robot.is_picked_up: 
+            #animation
+            await robot.play_anim_trigger(cozmo.anim.Triggers.CodeLabUnhappy, in_parallel=True).wait_for_completed()
+            flag_odom_init = False
+            reachedGoal = False
+            hasConverged = False
+            convergenceCheck= 0
+            await robot.drive_wheels(0.0, 0,0)
+            # while robot.is_picked_up:
+            #     await robot.drive_straight(distance_mm(0), speed_mmps(0)).wait_for_completed()
+            # continue
+
+
+
+        if not flag_odom_init:
+            #reset last_pose and particle distribution to uniform
+            last_pose = cozmo.util.Pose(0,0,0,angle_z=cozmo.util.Angle(degrees=0)) 
+            pf.particles = Particle.create_random(PARTICLE_COUNT, grid)
+            flag_odom_init = True
+        
+        #update particle filter
+        curr_pose = robot.pose
+        odom = compute_odometry(curr_pose, cvt_inch=True)
+        last_pose = curr_pose
+        markers, camera_image = await marker_processing(robot, camera_settings, show_diagnostic_image=False)
+        x, y, h, isConfident = pf.update(odom, markers)
+
+        
+        #
+        if isConfident: 
+            convergence_score += 5
+        if hasConverged and not isConfident: 
+            convergence_score -= 4
+        if convergence_score > 50:
+            hasConverged = True
+        if convergence_score < 0: 
+            hasConverged = False
+            convergence_score = 0
+        
+        await robot.drive_wheels(15.0/(1+convergence_score/10), -15.0/(1+convergence_score/10))
+
+        if not hasConverged: 
+            robot.loo
+
+
+
+        odom = compute_odometry(curr_pose, cvt_inch=True)
+        x, y, h, confident = update(odom, markers)
+        robot.turn_in_place(degrees(h)).wait_for_completed()
+        robot.driv
+        
+>>>>>>> cac2f6b70fe2a01d22d2d072cbe666c73ebd93ea
 
     ###################
 
