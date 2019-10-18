@@ -196,7 +196,7 @@ async def run(robot: cozmo.robot.Robot):
                 
                 print("THIRD")
                 print((diff_heading_deg(goal[2], z + (diff_heading_deg(math.degrees(math.atan2(goal[1] - y, goal[0] - x)), z)))))
-                await robot.turn_in_place(cozmo.util.degrees(diff_heading_deg(goal[2], z + (diff_heading_deg(math.degrees(math.atan2(goal[1] - y, goal[0] - x)), z)))), speed=cozmo.util.degrees(90)).wait_for_completed()
+                await robot.turn_in_place(cozmo.util.degrees(diff_heading_deg(goal[2], z + (diff_heading_deg(math.degrees(math.atan2(goal[1] - y, goal[0] - x)), z)))), speed=cozmo.util.degrees(95)).wait_for_completed()
                 
                 reachedGoalState = True
         
