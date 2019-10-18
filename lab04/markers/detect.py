@@ -341,11 +341,7 @@ def process_regions(image, blur_sigma=0.01, opening_size=1, orientation_deviatio
     image = filters.gaussian(image, sigma=blur_sigma)
 
     # Use local thresholding
-<<<<<<< HEAD
-    image = (image <= filters.threshold_sauvola(image, k=0.3))
-=======
-    image = (image <= filters.threshold_sauvola(image, k=0.1))
->>>>>>> cac2f6b70fe2a01d22d2d072cbe666c73ebd93ea
+    image = (image <= filters.threshold_sauvola(image, k=0.35))
 
     # if opening_size > 0:
     #     image = morphology.erosion(image, selem=morphology.disk(opening_size))

@@ -14,13 +14,10 @@ from numpy.linalg import inv
 import threading
 import time
 import sys
+import math
 import asyncio
 from PIL import Image
-<<<<<<< HEAD
 from cozmo.util import distance_mm, speed_mmps, degrees
-=======
-
->>>>>>> cac2f6b70fe2a01d22d2d072cbe666c73ebd93ea
 from markers import detect, annotator
 
 from grid import CozGrid
@@ -153,133 +150,74 @@ async def run(robot: cozmo.robot.Robot):
         [ 0,  0,  1]
     ], dtype=np.float)
 
-    ###################
-<<<<<<< HEAD
+    reachedGoalState = False
+    hasConverged = False
+    playedHappy = False
 
-    at_goal = False
-    localized = False
-    degree_increment = 20
-    forwardbackward = 1
     while True:
-        await robot.set_lift_height(0).wait_for_completed()
-        await robot.set_head_angle(cozmo.util.degrees(0)).wait_for_completed()
+        await robot.set_lift_height(0).wait_for_completed() # Reset robot to default state
+        await robot.set_head_angle(cozmo.util.degrees(0)).wait_for_completed() # Reset robot to default state
         
-        if localized:
-            if at_goal:
-                if robot.is_picked_up:
-                    await pickedUp(robot)
-                    pf, localized, at_goal = ParticleFilter(grid), false, false
+        if hasConverged: # Check if robot is localized
+            gui.show_particles(pf.particles)
+            gui.show_mean(x, y, z, hasConverged)
+            gui.show_camera_image(image)
+            gui.updated.set()
+            if reachedGoalState: # If robot is picked up after reaching goal state, relocalize
+                if robot.is_picked_up: # Robot picked up, relocalize
+                    await robot.play_anim_trigger(cozmo.anim.Triggers.CodeLabUnhappy).wait_for_completed() # Unhappy animation if the robot is picked up
+                    pf = ParticleFilter(grid)
+                    hasConverged = False
+                    reachedGoalState = False
+                    playedHappy = False
                     continue
-                await robot.play_anim_trigger(cozmo.anim.Triggers.CodeLabAmazed).wait_for_completed()
-            else:
+                
+                if playedHappy == False:
+                    await robot.play_anim_trigger(cozmo.anim.Triggers.CodeLabHappy).wait_for_completed()
+                    playedHappy = True
+                
+            else: # If robot is ot at goal state, but is still picked up
                 if robot.is_picked_up:
-                    await pickedUp(robot)
+                    await robot.play_anim_trigger(cozmo.anim.Triggers.CodeLabUnhappy).wait_for_completed() # Happy animation if the robot is picked up
                     pf = ParticleFilter(grid)
                     continue
                 x, y, z, _ = compute_mean_pose(pf.particles)
+                
+                robot.stop_all_motors()
+                time.sleep(1)
+                
+                print("FIRST")
+                print(diff_heading_deg(math.degrees(math.atan2(goal[1] - y, goal[0] - x)), z))
                 await robot.turn_in_place(cozmo.util.degrees(diff_heading_deg(math.degrees(math.atan2(goal[1] - y, goal[0] - x)), z))).wait_for_completed()
+                
+                print("SECOND")
+                print(math.sqrt((goal[0] - x) ** 2 + (goal[1] - y) ** 2) * grid.scale)
                 await robot.drive_straight(cozmo.util.distance_mm((math.sqrt((goal[0] - x) ** 2 + (goal[1] - y) ** 2) * grid.scale)), cozmo.util.speed_mmps(30)).wait_for_completed()
+                
+                print("THIRD")
+                print((diff_heading_deg(goal[2], z + (diff_heading_deg(math.degrees(math.atan2(goal[1] - y, goal[0] - x)), z)))))
                 await robot.turn_in_place(cozmo.util.degrees(diff_heading_deg(goal[2], z + (diff_heading_deg(math.degrees(math.atan2(goal[1] - y, goal[0] - x)), z)))), speed=cozmo.util.degrees(90)).wait_for_completed()
-                at_goal = True
-        else:
+                
+                reachedGoalState = True
+        
+        else: # If robot is not localized
             if robot.is_picked_up:
-                await pickedUp(robot)
+                await robot.play_anim_trigger(cozmo.anim.Triggers.CodeLabUnhappy).wait_for_completed()
                 pf = ParticleFilter(grid)
                 continue
             marker_list, image = await marker_processing(robot, camera_settings)
             robotPose = robot.pose
-            x, y, z, localized = pf.update(compute_odometry(robotPose), marker_list)
+            x, y, z, hasConverged = pf.update(compute_odometry(robotPose), marker_list)
+            if hasConverged == True: 
+                await robot.say_text("Converged").wait_for_completed()
+                continue
             gui.show_particles(pf.particles)
-            gui.show_mean(x, y, z, localized)
+            gui.show_mean(x, y, z, hasConverged)
             gui.show_camera_image(image)
             gui.updated.set()
-            moved = False
             last_pose = robotPose
-            if not localized:
-                await robot.turn_in_place(cozmo.util.degrees(degree_increment)).wait_for_completed()
-                
-                # if forwardbackward:
-                #     await robot.drive_straight(distance_mm(100.0), speed_mmps(500.0)).wait_for_completed()
-                #     forwardbackward = forwardbackward * -1
-                #     print(forwardbackward)
-                # else:
-                #     await robot.drive_straight(distance_mm(-80.0), speed_mmps(500.0)).wait_for_completed()
-                #     forwardbackward = forwardbackward * -1
-                #     print(forwardbackward)
-
-    ###################
-
-async def pickedUp(robot: cozmo.robot.Robot):
-    await robot.play_anim_trigger(cozmo.anim.Triggers.FrustratedByFailure).wait_for_completed()
-=======
-    reachedGoal = False
-    hasConverged = False
-    convergenceCheck = 0
-        
-    while (True):
-
-        #if robot arrived, don't move until not picked up
-        if reachedGoal: 
-            #animation
-            await robot.play_anim_trigger(cozmo.anim.Triggers.CodeLabExcited, in_parallel=True).wait_for_completed()
-            while not robot.is_picked_up: 
-                await robot.drive_straight(distance_mm(0), speed_mmps(0)).wait_for_completed() 
-
-        # if robot is kidnapped
-        if robot.is_picked_up: 
-            #animation
-            await robot.play_anim_trigger(cozmo.anim.Triggers.CodeLabUnhappy, in_parallel=True).wait_for_completed()
-            flag_odom_init = False
-            reachedGoal = False
-            hasConverged = False
-            convergenceCheck= 0
-            await robot.drive_wheels(0.0, 0,0)
-            # while robot.is_picked_up:
-            #     await robot.drive_straight(distance_mm(0), speed_mmps(0)).wait_for_completed()
-            # continue
-
-
-
-        if not flag_odom_init:
-            #reset last_pose and particle distribution to uniform
-            last_pose = cozmo.util.Pose(0,0,0,angle_z=cozmo.util.Angle(degrees=0)) 
-            pf.particles = Particle.create_random(PARTICLE_COUNT, grid)
-            flag_odom_init = True
-        
-        #update particle filter
-        curr_pose = robot.pose
-        odom = compute_odometry(curr_pose, cvt_inch=True)
-        last_pose = curr_pose
-        markers, camera_image = await marker_processing(robot, camera_settings, show_diagnostic_image=False)
-        x, y, h, isConfident = pf.update(odom, markers)
-
-        
-        #
-        if isConfident: 
-            convergence_score += 5
-        if hasConverged and not isConfident: 
-            convergence_score -= 4
-        if convergence_score > 50:
-            hasConverged = True
-        if convergence_score < 0: 
-            hasConverged = False
-            convergence_score = 0
-        
-        await robot.drive_wheels(15.0/(1+convergence_score/10), -15.0/(1+convergence_score/10))
-
-        if not hasConverged: 
-            robot.loo
-
-
-
-        odom = compute_odometry(curr_pose, cvt_inch=True)
-        x, y, h, confident = update(odom, markers)
-        robot.turn_in_place(degrees(h)).wait_for_completed()
-        robot.driv
-        
->>>>>>> cac2f6b70fe2a01d22d2d072cbe666c73ebd93ea
-
-    ###################
+            if not hasConverged:
+                await robot.drive_wheels(-10.00, 2.0)
 
 class CozmoThread(threading.Thread):
     
@@ -301,4 +239,3 @@ if __name__ == '__main__':
     gui.show_particles(pf.particles)
     gui.show_mean(0, 0, 0)
     gui.start()
-
