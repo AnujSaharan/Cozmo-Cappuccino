@@ -28,7 +28,6 @@ def step_from_to(node0, node1, limit=75):
         x_coordinates = node1.x - node0.x
         y_coordinates = node1.y - node0.y
         heading_angle = np.arctan2(y_coordinates, x_coordinates)
-        # return(Node((400,200)))
         return Node((node0.x + (limit * np.cos(heading_angle)), node0.y + (limit * np.sin(heading_angle))))
     ############################################################################
 
