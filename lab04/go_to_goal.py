@@ -159,10 +159,12 @@ async def run(robot: cozmo.robot.Robot):
         await robot.set_head_angle(cozmo.util.degrees(0)).wait_for_completed() # Reset robot to default state
         
         if hasConverged: # Check if robot is localized
+            
             gui.show_particles(pf.particles)
             gui.show_mean(x, y, z, hasConverged)
             gui.show_camera_image(image)
             gui.updated.set()
+            
             if reachedGoalState: # If robot is picked up after reaching goal state, relocalize
                 if robot.is_picked_up: # Robot picked up, relocalize
                     await robot.play_anim_trigger(cozmo.anim.Triggers.CodeLabUnhappy).wait_for_completed() # Unhappy animation if the robot is picked up
@@ -187,16 +189,19 @@ async def run(robot: cozmo.robot.Robot):
                 time.sleep(1)
                 
                 print("FIRST")
-                print(diff_heading_deg(math.degrees(math.atan2(goal[1] - y, goal[0] - x)), z))
-                await robot.turn_in_place(cozmo.util.degrees(diff_heading_deg(math.degrees(math.atan2(goal[1] - y, goal[0] - x)), z))).wait_for_completed()
+                diffAngle = diff_heading_deg(math.degrees(math.atan2(goal[1] - y, goal[0] - x)), z)
+                print(diffAngle)
+                await robot.turn_in_place(cozmo.util.degrees(diffAngle)).wait_for_completed()
                 
                 print("SECOND")
-                print(math.sqrt((goal[0] - x) ** 2 + (goal[1] - y) ** 2) * grid.scale)
-                await robot.drive_straight(cozmo.util.distance_mm((math.sqrt((goal[0] - x) ** 2 + (goal[1] - y) ** 2) * grid.scale)), cozmo.util.speed_mmps(30)).wait_for_completed()
+                drive_distance = (math.sqrt((goal[0] - x) ** 2 + (goal[1] - y) ** 2) * grid.scale)
+                print(drive_distance)
+                await robot.drive_straight(cozmo.util.distance_mm(drive_distance), cozmo.util.speed_mmps(30)).wait_for_completed()
                 
                 print("THIRD")
-                print((diff_heading_deg(goal[2], z + (diff_heading_deg(math.degrees(math.atan2(goal[1] - y, goal[0] - x)), z)))))
-                await robot.turn_in_place(cozmo.util.degrees(diff_heading_deg(goal[2], z + (diff_heading_deg(math.degrees(math.atan2(goal[1] - y, goal[0] - x)), z)))), speed=cozmo.util.degrees(95)).wait_for_completed()
+                diffAngle2 = (diff_heading_deg(goal[2], z + (diff_heading_deg(math.degrees(math.atan2(goal[1] - y, goal[0] - x)), z))))
+                print(diffAngle2)
+                await robot.turn_in_place(cozmo.util.degrees(diffAngle2), speed=cozmo.util.degrees(95)).wait_for_completed()
                 
                 reachedGoalState = True
         
@@ -205,6 +210,7 @@ async def run(robot: cozmo.robot.Robot):
                 await robot.play_anim_trigger(cozmo.anim.Triggers.CodeLabUnhappy).wait_for_completed()
                 pf = ParticleFilter(grid)
                 continue
+            
             marker_list, image = await marker_processing(robot, camera_settings)
             robotPose = robot.pose
             x, y, z, hasConverged = pf.update(compute_odometry(robotPose), marker_list)
