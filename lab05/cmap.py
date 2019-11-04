@@ -1,6 +1,6 @@
 import json
 import threading
-
+import random
 from utils import *
 
 
@@ -230,6 +230,33 @@ class CozMap:
         ############################################################################
         # TODO: please enter your code below.
         path = self.get_path()
+        
+        for i in range(limit): # Resample the path (limit) number of times
+            path_length = len(path) # Total path length
+            
+            sample_point_1 = random.randint(0, path_length - 1) # Random sample point 1 on the path we've planned
+            sample_point_2 = random.randint(0, path_length - 1) # Random sample point 2 on the path we've planned
+            
+            if sample_point_1 == sample_point_2: # Continue if the two random points happen to be the same point
+                continue
+            
+            point_closer_to_start_state = path[min((sample_point_1, sample_point_2))] # The random point closer to our starting position
+            point_closer_to_goal_state = path[max((sample_point_1, sample_point_2))] # The random point closer to our goal position
+
+            if self.is_collision_with_obstacles((point_closer_to_start_state, point_closer_to_goal_state)): # If the line segment between our random points collides with an obstacle, choose different points
+                continue
+            
+            else:
+                point_closer_to_goal_state.parent = point_closer_to_start_state # If the line segment does not hit an obstacle, connect the two points directly without needing intermediate points
+                
+                # Update the path with our new smoothed path
+                start_to_smooth_path = path[0: min((sample_point_1, sample_point_2)) + 1] # Represents the path from our global starting position up till the starting end of the line segment that we smoothed
+                # The path between the two points is now smoothed and does not consist of any intermediate nodes, these two points are now directly connected
+                smooth_path_to_goal = path[max((sample_point_1, sample_point_2)): path_length + 1] # Represents the path from our global goal state down to the end of the line segment that we smoothed
+                
+                # Finally add the two paths, two get our complete path
+                path =  start_to_smooth_path + smooth_path_to_goal
+                
         return path
 
     def get_path(self):
