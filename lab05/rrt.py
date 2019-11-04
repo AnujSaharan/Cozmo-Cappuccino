@@ -122,6 +122,10 @@ def get_global_node(local_angle, local_origin, node):
     ########################################################################
     # TODO: please enter your code below.
     new_node = None
+    transform_matrix = [[np.cos(local_angle), -(np.sin(local_angle)), local_origin.x], [np.sin(local_angle), np.cos(local_angle), local_origin.y], [0, 0, 1]]
+    node_matrix = [[node.x], [node.y], [1]]
+    new_matrix = transform_matrix.dot(node_matrix)
+    new_node = Node(new_matrix[0,0], new_matrix[1,0])
     return new_node
 
 
