@@ -8,6 +8,7 @@ import random
 import math
 import numpy as np
 
+from cozmo.util import distance_mm, speed_mmps, degrees
 from cmap import *
 from gui import *
 from utils import *
@@ -104,11 +105,25 @@ async def CozmoPlanning(robot: cozmo.robot.Robot):
     # Allows access to map and stopevent, which can be used to see if the GUI
     # has been closed by checking stopevent.is_set()
     global cmap, stopevent
-
     ########################################################################
     # TODO: please enter your code below.
     # Description of function provided in instructions
+    
+    markedCubes = {}
+    
+    # Set Cozmo to default configuration
+    await robot.set_head_angle(cozmo.util.degrees(0)).wait_for_completed()
 
+    # Create Node at starting position in our arena
+    initial_x = 500
+    initial_y = 235
+    cozmo_pos = Node((initial_x,initial_y))
+    
+    while True:
+        _, goalCenter, markedCubes = await detect_cube_and_update_cmap(robot, markedCubes, cozmo_pos)
+        cmap.set_start(Node((initial_x + robot.pose.position.x, initial_y + robot.pose.position.y))) # Set starting location within the c-space
+        RRT(cmap, cmap.get_start())
+    
 
 def get_global_node(local_angle, local_origin, node):
     """Helper function: Transform the node's position (x,y) from local coordinate frame specified by local_origin and local_angle to global coordinate frame.
@@ -124,12 +139,19 @@ def get_global_node(local_angle, local_origin, node):
     ########################################################################
     # TODO: please enter your code below.
     new_node = None
-    transform_matrix = [[np.cos(local_angle), -(np.sin(local_angle)), local_origin.x], [np.sin(local_angle), np.cos(local_angle), local_origin.y], [0, 0, 1]]
-    node_matrix = [[node.x], [node.y], [1]]
-    new_matrix = transform_matrix.dot(node_matrix)
-    new_node = Node(new_matrix[0,0], new_matrix[1,0])
+    transform_matrix = [
+      [np.cos(local_angle), -(np.sin(local_angle)), local_origin.x],
+      [np.sin(local_angle), np.cos(local_angle), local_origin.y],
+      [0, 0, 1]
+    ]
+    node_matrix = [
+      [node.x],
+      [node.y],
+      [1]
+    ]
+    new_matrix = np.dot(transform_matrix,node_matrix)
+    new_node = Node((new_matrix[0, 0], new_matrix[1, 0]))
     return new_node
-
 
 async def detect_cube_and_update_cmap(robot, marked, cozmo_pos):
     """Helper function used to detect obstacle cubes and the goal cube.
@@ -150,7 +172,6 @@ async def detect_cube_and_update_cmap(robot, marked, cozmo_pos):
         goal_center -- when a new valid goal is added, the center of the goal cube will be returned
     """
     global cmap
-
     # Padding of objects and the robot for C-Space
     cube_padding = 40.
     cozmo_padding = 100.
@@ -182,7 +203,7 @@ async def detect_cube_and_update_cmap(robot, marked, cozmo_pos):
             # Calculate the approach position of the object
             local_goal_pos = Node((0, -cozmo_padding))
             goal_pos = get_global_node(object_angle, object_pos, local_goal_pos)
-
+            # print(goal_pos[0])
             # Check whether this goal location is valid
             if cmap.is_inside_obstacles(goal_pos) or (not cmap.is_inbound(goal_pos)):
                 print("The goal position is not valid. Please remove the goal cube and place in another position.")
