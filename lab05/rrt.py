@@ -115,10 +115,10 @@ async def CozmoPlanning(robot: cozmo.robot.Robot):
     await robot.set_head_angle(cozmo.util.degrees(0)).wait_for_completed()
 
     # Create Node at starting position in our arena
-    initial_x = 500
-    initial_y = 235
+    initial_x = 500 # 50 centimeters
+    initial_y = 235 # 23.5 centimeters
     cozmo_pos = Node((initial_x,initial_y))
-    
+    # Now that we have our starting coordinates, we can update current pose within the arena as initial + robot.pose.position.x (Coordinates that cozmo maintains from starting location)
     while True:
         _, goalCenter, markedCubes = await detect_cube_and_update_cmap(robot, markedCubes, cozmo_pos)
         cmap.set_start(Node((initial_x + robot.pose.position.x, initial_y + robot.pose.position.y))) # Set starting location within the c-space
