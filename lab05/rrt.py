@@ -117,13 +117,20 @@ async def CozmoPlanning(robot: cozmo.robot.Robot):
     # Create Node at starting position in our arena
     initial_x = 500 # 50 centimeters
     initial_y = 235 # 23.5 centimeters
-    cozmo_pos = Node((initial_x,initial_y))
     # Now that we have our starting coordinates, we can update current pose within the arena as initial + robot.pose.position.x (Coordinates that cozmo maintains from starting location)
     while True:
-        _, goalCenter, markedCubes = await detect_cube_and_update_cmap(robot, markedCubes, cozmo_pos)
-        cmap.set_start(Node((initial_x + robot.pose.position.x, initial_y + robot.pose.position.y))) # Set starting location within the c-space
-        RRT(cmap, cmap.get_start())
-    
+        cozmo_pos = Node((initial_x + robot.pose.position.x, initial_y + robot.pose.position.y))
+        resetBoolean, goalCenter, markedCubes = await detect_cube_and_update_cmap(robot, markedCubes, cozmo_pos)
+        if resetBoolean is True:
+            cmap.reset_paths() # Retains goal positions but not the starting location
+        
+        if(len(cmap.get_goals)) > 0: # Calling RRT if the goal pose is unknown errors
+            cmap.set_start(cozmo_pos) # Set starting location within the c-space
+            RRT(cmap, cmap.get_start())
+        
+        else: # If goal state is currently unknown, explore my boi
+            await.robot.go_to_pose(cozmo.util.Pose())
+            
 
 def get_global_node(local_angle, local_origin, node):
     """Helper function: Transform the node's position (x,y) from local coordinate frame specified by local_origin and local_angle to global coordinate frame.
