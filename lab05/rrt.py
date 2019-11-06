@@ -110,26 +110,39 @@ async def CozmoPlanning(robot: cozmo.robot.Robot):
     # Description of function provided in instructions
     
     markedCubes = {}
+    map_width, map_height = cmap.get_size()
     
-    # Set Cozmo to default configuration
-    await robot.set_head_angle(cozmo.util.degrees(0)).wait_for_completed()
-
     # Create Node at starting position in our arena
-    initial_x = 500 # 50 centimeters
-    initial_y = 235 # 23.5 centimeters
+    initial_x = 50 # 50 centimeters
+    initial_y = 50 # 23.5 centimeters
     # Now that we have our starting coordinates, we can update current pose within the arena as initial + robot.pose.position.x (Coordinates that cozmo maintains from starting location)
+    initial_angle = 0
+    goalFound = False
+    goalCenter = None
     while True:
-        cozmo_pos = Node((initial_x + robot.pose.position.x, initial_y + robot.pose.position.y))
-        resetBoolean, goalCenter, markedCubes = await detect_cube_and_update_cmap(robot, markedCubes, cozmo_pos)
-        if resetBoolean is True:
-            cmap.reset_paths() # Retains goal positions but not the starting location
+        # Set Cozmo to default configuration
+        await robot.set_head_angle(cozmo.util.degrees(0)).wait_for_completed()
         
-        if(len(cmap.get_goals)) > 0: # Calling RRT if the goal pose is unknown errors
+        cozmo_pos = Node((initial_x + robot.pose.position.x, initial_y + robot.pose.position.y))
+        # resetBoolean, goalCenter, markedCubes = await detect_cube_and_update_cmap(robot, markedCubes, cozmo_pos)
+        
+        # if resetBoolean is True:
+            # cmap.reset_paths() # Retains goal positions but not the starting location
+        
+        # print("CURRENTLY RIGHT OUTSIDE RRT LOOP")
+        # print("Goal Center: ",goalCenter)
+        if goalCenter is not None and len(cmap.get_goals()) > 0: # Calling RRT if the goal pose is unknown errors
+            # print("ENTER RRT LOOP")
             cmap.set_start(cozmo_pos) # Set starting location within the c-space
             RRT(cmap, cmap.get_start())
-        
-        else: # If goal state is currently unknown, explore my boi
-            await.robot.go_to_pose(cozmo.util.Pose())
+            # await robot.go_to_pose(cozmo.util.Pose(map_width/2, 0, 0, angle_z=cozmo.util.degrees(0)), relative_to_robot = False).wait_for_completed()
+        elif goalCenter is None and len(cmap.get_goals()) == 0: # If goal state is currently unknown, explore my boi
+            await robot.go_to_pose(cozmo.util.Pose(map_width/2, map_height/2, 0, angle_z=cozmo.util.degrees(initial_angle)), relative_to_robot = False).wait_for_completed()
+            while not goalCenter:        
+                await robot.turn_in_place(degrees(10)).wait_for_completed()    
+                cozmo_pos = Node((initial_x + robot.pose.position.x, initial_y + robot.pose.position.y))
+                resetBoolean, goalCenter, markedCubes = await detect_cube_and_update_cmap(robot, markedCubes, cozmo_pos)
+            # print("BROKE OUT OF GOAL LOOP")
             
 
 def get_global_node(local_angle, local_origin, node):
