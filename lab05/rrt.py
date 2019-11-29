@@ -141,11 +141,13 @@ async def CozmoPlanning(robot: cozmo.robot.Robot):
                 cozmo_pos = Node((initial_x + robot.pose.position.x, initial_y + robot.pose.position.y))
                 resetBoolean, _ , _ = await detect_cube_and_update_cmap(robot, markedCubes, cozmo_pos)
                 if resetBoolean:
-                    cmap.clear_solved()
                     cmap.reset_paths()
                     cmap.clear_smooth_path()
                     cmap.clear_nodes()
                     cmap.clear_node_paths()
+                    print("THE LINE")
+                    
+                    RRT(cmap, cmap.get_start())
                     break
                 await robot.go_to_pose(cozmo.util.Pose(node.x - initial_x, node.y - initial_y, 0, angle_z=cozmo.util.degrees(0)), relative_to_robot=False).wait_for_completed()
                 

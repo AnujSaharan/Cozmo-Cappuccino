@@ -258,7 +258,17 @@ class CozMap:
                 
                 # Finally add the two paths, two get our complete path
                 path =  start_to_smooth_path + smooth_path_to_goal
-                
+
+                # path_length_2 = len(path) # Total path length
+                # sample_point_3 = random.randint(0, path_length - 1) # Random sample point 1 on the path we've planned
+                # sample_point_4 = random.randint(0, path_length - 1) # Random sample point 2 on the path we've planned
+
+                # if sample_point_3 == sample_point_4: # Continue if the two random points happen to be the same point
+                #     continue
+
+                # point_closer_to_start_state = path[min((sample_point_3, sample_point_4)] # The random point closer to our starting position
+                # point_closer_to_goal_state = path[max((sample_point_3, sample_point_4))] # The random point closer to our goal position
+
         return path
 
     def get_path(self):
