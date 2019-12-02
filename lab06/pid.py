@@ -36,18 +36,24 @@ async def CozmoPID(robot: cozmo.robot.Robot):
     y_error_sum = 0
     previousTime = time.time()
     iteration_count = 0
-    while iteration_count < 3:
+
+    reference_x = 130
+    reference_y = 0
+
+    while True:
         if iteration_count > 1:
             time_elapsed = time.time() - previousTime
             previousTime = time.time()
         else:
             time_elapsed = 1
 
-        reference_x = 130
-        reference_y = 0
-
         x_distance_from_cube = (cube_position_x - robot.pose.position.x)
+        # print("\nCube Position: {0}\nRobot Pose: {1}\nX Distance: {2}\n".format(
+        # cube_position_x, robot.pose.position.x, x_distance_from_cube))
         y_distance_from_cube = (cube_position_y - robot.pose.position.y)
+
+        if cube_position_x == 0:  # Too close to the cube
+            reference_x = 20
 
         error_x = x_distance_from_cube - reference_x
         error_y = y_distance_from_cube - reference_y
@@ -67,11 +73,12 @@ async def CozmoPID(robot: cozmo.robot.Robot):
         prev_x = error_x
         prev_y = error_y
 
-        print("ITERATION #{5}\nX PID: {0}\nY PID: {6}\n\nX from Cube: {1}\nY from Cube: {2}\n\nX Error: {3}\nY error: {4}\n\nTime Elapsed: {7}\nPx: {8}\nPy: {9}\nDx: {10}\nDy: {11}\n\n".format(
-            str(pidx), str(x_distance_from_cube), str(y_distance_from_cube), str(error_x), str(error_y), str(iteration_count), str(pidy), str(time_elapsed), str(px), str(py), str(dx), str(dy)))
+        # print("ITERATION #{5}\nX PID: {0}\nY PID: {6}\n\nX from Cube: {1}\nY from Cube: {2}\n\nX Error: {3}\nY error: {4}\n\nTime Elapsed: {7}\nPx: {8}\nPy: {9}\nDx: {10}\nDy: {11}\n\n".format(
+        # str(pidx), str(x_distance_from_cube), str(y_distance_from_cube), str(error_x), str(error_y), str(iteration_count), str(pidy), str(time_elapsed), str(px), str(py), str(dx), str(dy)))
 
         robot.drive_wheel_motors(pidx, pidx)
         iteration_count += 1
+
         await robot.wait_for(cozmo.robot.EvtRobotStateUpdated)
 
 
