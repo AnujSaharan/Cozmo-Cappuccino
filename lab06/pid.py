@@ -1,3 +1,5 @@
+#Riya Agrawal and Anuj Saharan
+
 import cozmo
 import threading
 import json
@@ -52,8 +54,8 @@ async def CozmoPID(robot: cozmo.robot.Robot):
         # cube_position_x, robot.pose.position.x, x_distance_from_cube))
         y_distance_from_cube = (cube_position_y - robot.pose.position.y)
 
-        if cube_position_x == 0:  # Too close to the cube
-            reference_x = 20
+        # if cube_position_x == 0:  # Too close to the cube
+        #     reference_x = 20
 
         error_x = x_distance_from_cube - reference_x
         error_y = y_distance_from_cube - reference_y
